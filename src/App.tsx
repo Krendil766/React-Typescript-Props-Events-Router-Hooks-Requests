@@ -1,87 +1,52 @@
-import Cards, { CardVariant } from './components/Cards';
-import UserList from './components/UserList';
-import axios, { AxiosResponse } from 'axios';
-import { useState, useEffect } from 'react';
-import { IToDo, IUser } from './types/types';
-import List from './components/List';
-import UserItem from './components/UserItem';
-import TodoItem from './components/TodoItem';
-import EventsExample from './components/EventsExample'
+// import Cards, { CardVariant } from "./components/Cards";
+import { useState, useEffect, useCallback } from "react";
+import { BrowserRouter, Route, NavLink } from "react-router-dom";
 
+import EventsExample from "./components/EventsExample";
+import UserPage from "./components/users/UserPage";
+import TodosPage from "./components/todos/TodosPage";
+import UserItemPage from "./components/users/UserItemPage";
+import TodoItemPage from './components/todos/TodoItemPage';
 
 const App = () => {
-  const [users, setUsers] = useState<IUser[]>([]);
-  const [todos, setTodo] = useState<IToDo[]>([]);
   const [page, setPage] = useState<number>(1);
   const [limit, setLimit] = useState<number>(5);
-
 
   const pages = [1, 2, 3, 4, 5];
   const limits = [5, 15, 25, 50, 100, 200];
 
-  useEffect(() => {
-    fetchUsers();
-    fetchTodos();
-  }, [page, limit]);
+  useEffect(() => {}, [page, limit]);
 
-  async function fetchUsers() {
-    const response: AxiosResponse<IUser[]> = await axios.get('https://jsonplaceholder.typicode.com/users', {
-      params: { _page: page, _limit: limit }
-    });
-    try {
-      setUsers(response.data)
-    } catch (e) {
-      console.log(e);
-    }
-  }
-  const fetchTodos = async () => {
-    const response: AxiosResponse<IToDo[]> = await axios.get('https://jsonplaceholder.typicode.com/todos', {
-      params: { _page: page, _limit: limit }
-    });
-    try {
-      setTodo(response.data)
-    } catch (e) {
-      console.log(e);
-    }
-  }
-  const onClickPage = (item: number): void => {
+  const onClickPage = useCallback((item: number): void => {
     setPage(item);
-  }
-  const onClickLimit = (item: number): void => {
+  }, []);
+  const onClickLimit = useCallback((item: number): void => {
     setLimit(item);
-  }
+  }, []);
   return (
     <div>
-
-      {/* <Cards width='200px'
-        height="200px"
-        variant={CardVariant.outlined}
-        onClick={(num) => { console.log(num) }}>
-        <button>Send</button>
-      </Cards> */}
-
-      <div style={{ display: 'flex', cursor: 'pointer' }}>
+      <div style={{ display: "flex", cursor: "pointer" }}>
         Pages:
         {pages.map((item, i) => (
-          <div style={{
-            border: item === page ?
-              '2px solid red' : '1px solid black',
-            padding: '10px'
-          }}
+          <div
+            style={{
+              border: item === page ? "2px solid red" : "1px solid black",
+              padding: "10px",
+            }}
             onClick={() => onClickPage(item)}
           >
             {item}
           </div>
         ))}
       </div>
-      <div style={{ display: 'flex', cursor: 'pointer' }}>
+      <div style={{ display: "flex", cursor: "pointer" }}>
         Limit:
         {limits.map((item, i) => (
-          <div style={{
-            border: item === limit ?
-              '2px solid green' : '1px solid black',
-            padding: '3px'
-          }}
+          <div
+            style={{
+              border: item === limit ? "2px solid green" : "1px solid black",
+              padding: "3px",
+            }}
             onClick={() => onClickLimit(item)}
           >
             {item}
@@ -89,13 +54,39 @@ const App = () => {
         ))}
       </div>
 
-      <List items={users} renderItem={(user: IUser) => <UserItem user={user} key={user.id} />} />
-      <List items={todos} renderItem={(todo: IToDo) => <TodoItem todo={todo} key={todo.id} />} />
+      <BrowserRouter>
+        <div>
+          <div>
+            <button>
+              <NavLink to="/users">Users</NavLink>
+            </button>
+            <button>
+              <NavLink to="/todos">ToDos</NavLink>
+            </button>
+          </div>
 
-      <EventsExample />
+          <Route path={"/users"} exact>
+            <UserPage page={page} limit={limit} />
+          </Route>
 
+          <Route path={"/todos"} exact>
+            <TodosPage page={page} limit={limit} />
+          </Route>
+
+          <Route path={`/users/:index`}>
+            <UserItemPage />
+          </Route>
+
+          <Route path={`/todos/:index`}>
+            <TodoItemPage />
+          </Route>
+
+        </div>
+      </BrowserRouter>
+
+      {/* <EventsExample /> */}
     </div>
-  )
-}
+  );
+};
 
-export default App
+export default App;
